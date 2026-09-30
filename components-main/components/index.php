@@ -17,36 +17,176 @@ function escapar(string $texto): string
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fluxo de uma requisição</title>
     <style>
-        /* Paleta centralizada para facilitar mudanças no tema. */
-        :root { --fundo:#f4f7fb; --cartao:#fff; --texto:#182230; --suave:#667085; --roxo:#5b5bd6; --claro:#eeeeff; --borda:#e4e7ec; }
+        /* Novo esquema de cores Dark/Moderno em tons de esmeralda e ardósia */
+        :root { 
+            --fundo: #0f172a; 
+            --cartao: #1e293b; 
+            --texto: #f8fafc; 
+            --suave: #94a3b8; 
+            --destaque: #10b981; 
+            --claro: rgba(16, 185, 129, 0.12); 
+            --borda: #334155; 
+        }
+
         * { box-sizing: border-box; }
-        body { margin:0; min-height:100vh; color:var(--texto); background:radial-gradient(circle at top left,#e8e9ff,var(--fundo) 45%); font-family:Inter,system-ui,sans-serif; }
-        /* Mantém o conteúdo centralizado e confortável em qualquer tela. */
-        .pagina { width:min(1080px,calc(100% - 32px)); margin:auto; padding:64px 0; }
-        .etiqueta { display:inline-block; padding:7px 12px; color:var(--roxo); background:var(--claro); border-radius:999px; font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
-        h1 { margin:12px 0; font-size:clamp(2rem,5vw,3.6rem); line-height:1.05; }
-        .subtitulo { max-width:680px; color:var(--suave); font-size:1.08rem; line-height:1.7; }
-        /* Separa o fluxo da requisição e o resultado retornado. */
-        .grade { display:grid; grid-template-columns:1.55fr .85fr; gap:24px; margin-top:40px; }
-        .cartao { padding:28px; background:var(--cartao); border:1px solid var(--borda); border-radius:24px; box-shadow:0 18px 50px rgba(16,24,40,.08); }
-        .cartao h2 { margin:0 0 22px; font-size:1.2rem; }
-        .fluxo,.usuarios { margin:0; padding:0; list-style:none; }
-        .fluxo { counter-reset:etapa; }
-        /* Numera visualmente cada camada percorrida. */
-        .fluxo li { position:relative; min-height:58px; padding:8px 0 20px 58px; color:var(--suave); counter-increment:etapa; }
-        .fluxo li::before { content:counter(etapa); position:absolute; top:0; left:0; display:grid; width:38px; height:38px; place-items:center; color:white; background:var(--roxo); border-radius:12px; font-weight:800; }
-        .fluxo li:not(:last-child)::after { content:""; position:absolute; top:40px; bottom:2px; left:18px; width:2px; background:var(--borda); }
-        .status { color:#027a48; font-weight:700; line-height:1.5; }
-        .usuarios { display:grid; gap:12px; }
-        .usuarios li { display:flex; align-items:center; gap:12px; padding:14px; background:var(--fundo); border-radius:14px; font-weight:650; }
-        .avatar { display:grid; width:36px; height:36px; place-items:center; color:var(--roxo); background:var(--claro); border-radius:50%; }
-        /* No celular, os cartões passam a ocupar linhas separadas. */
-        @media (max-width:760px) { .pagina{padding:40px 0} .grade{grid-template-columns:1fr} .cartao{padding:22px} }
+
+        body { 
+            margin: 0; 
+            min-height: 100vh; 
+            color: var(--texto); 
+            background: radial-gradient(circle at top right, #1e1b4b, var(--fundo) 50%); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+        }
+
+        /* Container principal */
+        .pagina { 
+            width: min(1080px, calc(100% - 32px)); 
+            margin: auto; 
+            padding: 56px 0; 
+        }
+
+        .etiqueta { 
+            display: inline-flex; 
+            align-items: center; 
+            padding: 6px 16px; 
+            color: var(--destaque); 
+            background: var(--claro); 
+            border: 1px solid rgba(16, 185, 129, 0.3); 
+            border-radius: 8px; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            letter-spacing: 0.05em; 
+            text-transform: uppercase; 
+        }
+
+        h1 { 
+            margin: 16px 0 10px; 
+            font-size: clamp(2rem, 4.5vw, 3.2rem); 
+            font-weight: 800; 
+            line-height: 1.1; 
+            letter-spacing: -0.02em; 
+        }
+
+        .subtitulo { 
+            max-width: 640px; 
+            color: var(--suave); 
+            font-size: 1.1rem; 
+            line-height: 1.6; 
+        }
+
+        /* Layout em grade */
+        .grade { 
+            display: grid; 
+            grid-template-columns: 1.5fr 0.9fr; 
+            gap: 28px; 
+            margin-top: 36px; 
+        }
+
+        .cartao { 
+            padding: 32px; 
+            background: var(--cartao); 
+            border: 1px solid var(--borda); 
+            border-radius: 16px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3); 
+        }
+
+        .cartao h2 { 
+            margin: 0 0 24px; 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            border-bottom: 1px solid var(--borda); 
+            padding-bottom: 12px; 
+        }
+
+        .fluxo, .usuarios { 
+            margin: 0; 
+            padding: 0; 
+            list-style: none; 
+        }
+
+        /* Indicadores numéricos do fluxo */
+        .fluxo { counter-reset: etapa; }
+
+        .fluxo li { 
+            position: relative; 
+            min-height: 60px; 
+            padding: 4px 0 24px 54px; 
+            color: var(--suave); 
+            counter-increment: etapa; 
+            font-size: 0.98rem; 
+        }
+
+        .fluxo li::before { 
+            content: counter(etapa); 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            display: grid; 
+            width: 36px; 
+            height: 36px; 
+            place-items: center; 
+            color: #022c22; 
+            background: var(--destaque); 
+            border-radius: 50%; 
+            font-weight: 800; 
+            font-size: 0.9rem; 
+        }
+
+        .fluxo li:not(:last-child)::after { 
+            content: ""; 
+            position: absolute; 
+            top: 38px; 
+            bottom: 6px; 
+            left: 17px; 
+            width: 2px; 
+            background: var(--borda); 
+        }
+
+        .status { 
+            color: #34d399; 
+            font-weight: 600; 
+            line-height: 1.5; 
+            margin-bottom: 18px; 
+        }
+
+        /* Lista de usuários */
+        .usuarios { display: grid; gap: 10px; }
+
+        .usuarios li { 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            padding: 12px 16px; 
+            background: rgba(15, 23, 42, 0.6); 
+            border: 1px solid var(--borda); 
+            border-radius: 10px; 
+            font-weight: 600; 
+        }
+
+        .avatar { 
+            display: grid; 
+            width: 34px; 
+            height: 34px; 
+            place-items: center; 
+            color: var(--destaque); 
+            background: var(--claro); 
+            border: 1px solid rgba(16, 185, 129, 0.2); 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+        }
+
+        /* Ajuste para dispositivos móveis */
+        @media (max-width: 760px) { 
+            .pagina { padding: 32px 0; } 
+            .grade { grid-template-columns: 1fr; } 
+            .cartao { padding: 24px; } 
+        }
     </style>
 </head>
 <body>
     <main class="pagina">
-        <span class="etiqueta">Arquitetura em camadas</span>
+        <span class="etiqueta">Arquitetura em Camadas</span>
         <h1>Como uma requisição percorre o sistema?</h1>
         <p class="subtitulo">Acompanhe a sequência executada até os dados dos usuários chegarem à interface.</p>
 
@@ -54,7 +194,6 @@ function escapar(string $texto): string
             <article class="cartao">
                 <h2>Fluxo da requisição</h2>
                 <ol class="fluxo">
-                    <!-- Repete um item visual para cada etapa registrada pelo PHP. -->
                     <?php foreach ($resultado['etapas'] as $etapa): ?>
                         <li><?= escapar($etapa) ?></li>
                     <?php endforeach; ?>
@@ -65,9 +204,11 @@ function escapar(string $texto): string
                 <h2>Resposta do Service</h2>
                 <p class="status"><?= escapar($resultado['mensagem']) ?></p>
                 <ul class="usuarios">
-                    <!-- Exibe cada usuário retornado pela camada de serviço. -->
                     <?php foreach ($resultado['usuarios'] as $usuario): ?>
-                        <li><span class="avatar" aria-hidden="true"><?= escapar(substr($usuario, 0, 1)) ?></span><?= escapar($usuario) ?></li>
+                        <li>
+                            <span class="avatar" aria-hidden="true"><?= escapar(substr($usuario, 0, 1)) ?></span>
+                            <?= escapar($usuario) ?>
+                        </li>
                     <?php endforeach; ?>
                 </ul>
             </aside>
